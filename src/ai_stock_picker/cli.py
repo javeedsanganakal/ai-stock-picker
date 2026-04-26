@@ -37,7 +37,7 @@ def info(symbol: str):
     table.add_row("Industry", stock.industry or "N/A")
     table.add_row("52W High", f"${stock.fifty_two_week_high:.2f}" if stock.fifty_two_week_high else "N/A")
     table.add_row("52W Low", f"${stock.fifty_two_week_low:.2f}" if stock.fifty_two_week_low else "N/A")
-    table.add_row("Dividend Yield", f"{stock.dividend_yield:.2%}" if stock.dividend_yield else "N/A")
+    table.add_row("Dividend Yield", f"{stock.dividend_yield:.2f}%" if stock.dividend_yield else "N/A")
 
     console.print(table)
 
