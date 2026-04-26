@@ -11,3 +11,4 @@ venv/
 .env
 .ruff_cache/
 .pytest_cache/
+get_sp500.py

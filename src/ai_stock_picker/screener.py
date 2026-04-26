@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 
 from .market_data import StockSnapshot, get_multiple_stocks, SP500_TOP_50
+from .sp500 import SP500_ALL, SP500_BY_SECTOR
 
 
 @dataclass
@@ -58,6 +59,14 @@ def screen_stocks(
     Returns:
         List of stocks matching all criteria.
     """
-    symbols = universe or SP500_TOP_50
+    # If sectors specified and no custom universe, narrow to those sector tickers
+    if not universe and criteria.sectors:
+        symbols = []
+        for sector in criteria.sectors:
+            symbols.extend(SP500_BY_SECTOR.get(sector, []))
+        if not symbols:
+            symbols = SP500_TOP_50  # fallback
+    else:
+        symbols = universe or SP500_TOP_50
     stocks = get_multiple_stocks(symbols)
     return [s for s in stocks if _matches(s, criteria)]
