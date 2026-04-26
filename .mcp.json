@@ -4,7 +4,7 @@
       "command": "/Users/mohammadjaveedsanganakal/miniconda3/bin/python3",
       "args": ["-m", "ai_stock_picker.mcp_server"],
       "env": {
-        "PYTHONPATH": "/Users/mohammadjaveedsanganakal/projects/ai-stock-picker/src"
+        "PYTHONPATH": "/Users/mohammadjaveedsanganakal/workplace/ai-stock-picker/src"
       }
     }
   }

@@ -39,8 +39,26 @@ Step 5 — BUILD PORTFOLIO: Call portfolio_builder with the final picks, budget,
 | AI-scored stock picks       | suggest_stocks      |
 | List all sectors            | list_sectors        |
 
+## Legendary Trader Strategies (THE CORE FEATURE)
+
+You have 7 strategies modeled after the greatest traders in history.
+START EVERY SESSION with daily_briefing — it picks the right mindset for today.
+
+| Trader         | Key        | Strategy                                    |
+|----------------|------------|---------------------------------------------|
+| George Soros   | soros      | Macro thesis — big trends, bet heavily      |
+| Jim Simons     | simons     | Quantitative — statistical edges, no emotion|
+| Paul Tudor Jones| jones     | Technical + macro — follow trends            |
+| John Paulson   | paulson    | Contrarian — what is everyone wrong about?  |
+| Ray Dalio      | dalio      | All-weather — balanced for any environment  |
+| Jesse Livermore| livermore  | Momentum — ride winners, cut losers fast    |
+| Takashi Kotegawa| kotegawa  | Crash buying — buy the blood, mean reversion|
+
+Tools: daily_briefing, run_strategy, all_strategies_summary
+
 ## Analyst Mindset (think JPM senior desk)
 
+- START with daily_briefing to pick today's strategy
 - Always consider RISK alongside returns — check beta, drawdown, volatility
 - Never recommend a stock without checking earnings calendar first
 - Use sector rotation to confirm the sector is in favor
@@ -346,6 +364,91 @@ def list_sectors() -> str:
         sector: {"count": len(tickers), "sample": tickers[:5]}
         for sector, tickers in SP500_BY_SECTOR.items()
     }, indent=2)
+
+
+# ─── Legendary Trader Strategies ─────────────────────────────────────────────
+
+@mcp.tool()
+def daily_briefing() -> str:
+    """MORNING BRIEFING — start every day with this.
+
+    Analyzes today's market conditions and recommends which legendary trader's
+    strategy to follow. Then runs that strategy and gives you actionable picks.
+
+    This is the single most important tool. Use it first thing.
+    """
+    from ai_stock_picker.strategies import TRADER_STRATEGIES
+    from ai_stock_picker.strategies.selector import pick_todays_strategy
+    import dataclasses
+
+    rec = pick_todays_strategy()
+
+    # Run the primary strategy
+    primary_info = TRADER_STRATEGIES[rec.primary]
+    result = primary_info["func"]()
+
+    return json.dumps({
+        "todays_strategy": {
+            "primary": primary_info["name"],
+            "primary_key": rec.primary,
+            "secondary": TRADER_STRATEGIES[rec.secondary]["name"],
+            "secondary_key": rec.secondary,
+            "reasoning": rec.reasoning,
+        },
+        "market_conditions": rec.market_conditions,
+        "strategy_result": dataclasses.asdict(result),
+    }, indent=2, default=str)
+
+
+@mcp.tool()
+def run_strategy(trader: str) -> str:
+    """Run a specific legendary trader's strategy.
+
+    Args:
+        trader: One of: "soros", "simons", "jones", "paulson", "dalio", "livermore", "kotegawa"
+
+    Strategies:
+    - soros: Macro thesis — find the big trend and bet on it
+    - simons: Quantitative — statistical edges, remove emotion
+    - jones: Technical + macro — follow trends with discipline
+    - paulson: Contrarian — what is the crowd wrong about?
+    - dalio: All-weather — balanced portfolio for any environment
+    - livermore: Momentum — ride winners, cut losers
+    - kotegawa: Crash buying — buy the blood, mean reversion
+    """
+    import dataclasses
+    from ai_stock_picker.strategies import TRADER_STRATEGIES
+
+    trader = trader.lower()
+    if trader not in TRADER_STRATEGIES:
+        return json.dumps({"error": f"Unknown trader. Choose from: {list(TRADER_STRATEGIES.keys())}"})
+
+    info = TRADER_STRATEGIES[trader]
+    result = info["func"]()
+
+    return json.dumps({
+        "trader": info["name"],
+        "style": info["style"],
+        "best_when": info["best_when"],
+        "result": dataclasses.asdict(result),
+    }, indent=2, default=str)
+
+
+@mcp.tool()
+def all_strategies_summary() -> str:
+    """List all 7 legendary trader strategies with their styles.
+
+    Use this to help the user understand which strategy fits their personality
+    or current market conditions.
+    """
+    from ai_stock_picker.strategies import TRADER_STRATEGIES
+
+    return json.dumps([{
+        "key": key,
+        "name": info["name"],
+        "style": info["style"],
+        "best_when": info["best_when"],
+    } for key, info in TRADER_STRATEGIES.items()], indent=2)
 
 
 def main():
